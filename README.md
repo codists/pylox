@@ -1,3 +1,7 @@
+# Reference
+
+Bob Nystrom's [Crafting Interpreters](https://craftinginterpreters.com/).
+
 # 项目运行方式
 
 ## 以文件方式运行

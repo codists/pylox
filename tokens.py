@@ -11,6 +11,7 @@ class Token:
         self.token_type = token_type
         self.lexeme  = lexeme
         self.literal = literal
+        # 报错的时候用到
         self.line = line
 
     def __str__(self) -> str:

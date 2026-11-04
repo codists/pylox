@@ -74,6 +74,16 @@ class Scanner:
                         self.advance()
                 else:
                     self.add_token(TokenType.SLASH)
+            # ' ': 按键盘的空格键(space bar, 最长的那个按键)会出现这种情况
+            # '\r': 这里其实是换行符的一部分，一般来说，在 Window 系统的软件上按 Enter 键会出现这种情况，按 Enter 键时，
+            # 行尾会追加 \r\n
+            # '\t': 按键盘的 Tab 键会出现这种情况。
+            case ' ' | '\r' | '\t':
+                pass
+            # \n: 一般来说, 在 Linux 系统输入时, 按 Enter 键的时候会出现这种情况.按 Enter 键时，行尾会追加 \n。
+            case '\n':
+                self.line += 1
+
             # 异常字符处理, 如: @#^
             case _:
                 Lox.error(f"Unexpected character '{c}'")

@@ -1,6 +1,8 @@
 class Lox:
-    def error(self, line: int, message: str) -> None:
-        self.report(line, "", message)
+    @staticmethod
+    def error(line: int, message: str) -> None:
+        Lox.report(line, "", message)
 
-    def report(self, line: int, where: str, message: str) -> None:
+    @staticmethod
+    def report(line: int, where: str, message: str) -> None:
         print(f"[line {line}] Error {where}: {message}")

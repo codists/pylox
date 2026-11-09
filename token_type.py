@@ -48,6 +48,10 @@ class TokenType(Enum):
     # <=
     LESS_EQUAL = auto()
 
+    # literal(字面量)
+    STRING = auto()
+    NUMBER = auto()
+
     # 关键字
     AND = auto()
     CLASS = auto()

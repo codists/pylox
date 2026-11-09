@@ -20,7 +20,7 @@ def main() -> None:
 
     test_mode = True
     # test_file = "./test/comments/line_at_eof.lox"
-    test_file = "./test/comments/only_line_comment.lox"
+    test_file = "./test/string/temp.lox"
     if test_mode:
         run_file(test_file)
 
@@ -71,8 +71,9 @@ def run_prompt() -> None:
 def run(source: str) -> None:
     scanner = Scanner(source)
     tokens: list = scanner.scan_tokens()
+    print(f"tokens: {tokens}")
     for token in tokens:
-        print(f"token: {token}")
+        print(f"token 结构: {token.token_type}, {token.lexeme!r}, {token.literal!r}, {token.line}")
 
 
 if __name__ == "__main__":

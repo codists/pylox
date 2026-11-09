@@ -8,13 +8,20 @@ from token_type import TokenType
 class Token:
     # 这里的 literal Java 里面用的类型是 Object, Python 里面类型注解暂时用 Any
     def __init__(self, token_type: TokenType, lexeme: str, literal: Any, line: int) -> None:
+        """
+
+        :param token_type: Token 类型，如：LEFT_PAREN
+        :param lexeme: 词素
+        :param literal:字面量
+        :param line: 行号
+        """
         self.token_type = token_type
         self.lexeme  = lexeme
         self.literal = literal
-        # 报错的时候用到
+        # Token 开始所在的行，报错的时候用到
         self.line = line
 
     def __str__(self) -> str:
-        return f'{self.token_type} {self.lexeme} {self.literal} {self.line}'
+        return f'{self.token_type}, {self.lexeme}, {self.literal}, {self.line}'
 
 

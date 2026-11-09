@@ -8,16 +8,20 @@ from tokens import Token
 
 
 class Scanner:
-    start: int = 0
-    current: int = 0
-    line: int = 1
-
     def __init__(self, source: str) -> None:
         self.source: str = source
         self.tokens: list[Token] = []
+        self.start: int = 0
+        self.current: int = 0
+        self.line: int = 1
 
     def scan_tokens(self) -> list[Token]:
+        """
+        处理所有的 lexeme
+        :return:
+        """
         while not self.is_at_end():
+            # 每处理完一个 lexeme, self.start 更新为下一个 lexeme 的开始索引
             self.start = self.current
             self.scan_token()
         print(f"scan_tokens: {self.tokens}")
@@ -29,6 +33,10 @@ class Scanner:
         return self.tokens
 
     def scan_token(self) -> None:
+        """
+        处理单个 lexeme
+        :return:
+        """
         c = self.advance()
         print(f"current={self.current}, 字符: {c}")
         match c:
@@ -49,7 +57,7 @@ class Scanner:
             case "+":
                 self.add_token(TokenType.PLUS)
             case ";":
-                self.add_token(TokenType.SEMICLON)
+                self.add_token(TokenType.SEMICOLON)
             case "*":
                 self.add_token(TokenType.STAR)
             # 两个字符构成的符号：!=,==, <=, >=
@@ -78,15 +86,41 @@ class Scanner:
             # '\r': 这里其实是换行符的一部分，一般来说，在 Window 系统的软件上按 Enter 键会出现这种情况，按 Enter 键时，
             # 行尾会追加 \r\n
             # '\t': 按键盘的 Tab 键会出现这种情况。
-            case ' ' | '\r' | '\t':
+            case " " | "\r" | "\t":
                 pass
             # \n: 一般来说, 在 Linux 系统输入时, 按 Enter 键的时候会出现这种情况.按 Enter 键时，行尾会追加 \n。
-            case '\n':
+            case "\n":
                 self.line += 1
+
+            # 字符串(string)
+            # '"' 也可以写成 "\""
+            case '"':
+                # 判断是否是右引号？
+                literal_string = ""
+                while self.peek() != '"' and not self.is_at_end():
+                    data = self.advance()
+
+                    # 字符串中包含换行符
+                    if data == "\n":
+                        self.line += 1
+
+                    literal_string += data
+
+                # 缺失右双引号
+                if self.is_at_end():
+                    Lox.error(self.line, f"右双引号缺失(Unexpected character) {c}")
+                    # 这里要返回，以免不完整的字符串(如："123 )被添加到 Token
+                    return
+
+                # 如果没有到达代码末尾，消耗掉右双引号
+                if not self.is_at_end():
+                    self.advance()
+
+                self.add_token(TokenType.STRING, literal_string)
 
             # 异常字符处理, 如: @#^
             case _:
-                Lox.error(f"Unexpected character '{c}'")
+                Lox.error(self.line, f"Unexpected character {c}")
 
     def match(self, expected: str) -> bool:
         """
@@ -111,8 +145,8 @@ class Scanner:
         :return:
         """
         # todo 源代码中的这部分不知道什么场景会出现，先注释
-        # if self.is_at_end():
-        #     return "\0"
+        if self.is_at_end():
+            return "\0"
 
         return self.source[self.current]
 
@@ -134,6 +168,12 @@ class Scanner:
         self.current += 1
         return char
 
-    def add_token(self, type: TokenType, literal: object | None) -> None:
+    def add_token(self, type: TokenType, literal: object | None = None) -> None:
+        """
+        将每个 token 添加到 tokens 列表中，数据来源于 scan_token()。
+        :param type: token 类型
+        :param literal: token 字面量
+        :return: None
+        """
         text: str = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))

@@ -5,7 +5,6 @@ from enum import Enum, auto
 
 
 class TokenType(Enum):
-
     # 单个 character
     # (
     LEFT_PAREN = auto()
@@ -48,11 +47,14 @@ class TokenType(Enum):
     # <=
     LESS_EQUAL = auto()
 
+    # identifier(标识符)
+    IDENTIFIER = auto()
+
     # literal(字面量)
     STRING = auto()
     NUMBER = auto()
 
-    # 关键字
+    # 关键字（keyword）/reserved word（保留字）：这个两个概念是一样的
     AND = auto()
     CLASS = auto()
     ELSE = auto()

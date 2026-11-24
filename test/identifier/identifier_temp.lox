@@ -1,0 +1,3 @@
+// identifier(标识符)：project/pylox/test/identifier/identifier_temp.lox
+// 输出：token 结构: TokenType.IDENTIFIER, 'ifidentifier', None, 3
+ifidentifier

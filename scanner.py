@@ -8,6 +8,24 @@ from tokens import Token
 
 
 class Scanner:
+    keywords: dict[str, TokenType] = {
+        "add": TokenType.AND,
+        "class": TokenType.CLASS,
+        "else": TokenType.ELSE,
+        "false": TokenType.FALSE,
+        "for": TokenType.FOR,
+        "fun": TokenType.FUN,
+        "if": TokenType.IF,
+        "nil": TokenType.NIL,
+        "or": TokenType.OR,
+        "return": TokenType.RETURN,
+        "print": TokenType.PRINT,
+        "super": TokenType.SUPER,
+        "true": TokenType.TRUE,
+        "var": TokenType.VAR,
+        "while": TokenType.WHILE,
+    }
+
     def __init__(self, source: str) -> None:
         self.source: str = source
         self.tokens: list[Token] = []
@@ -24,12 +42,9 @@ class Scanner:
             # 每处理完一个 lexeme, self.start 更新为下一个 lexeme 的开始索引
             self.start = self.current
             self.scan_token()
-        print(f"scan_tokens: {self.tokens}")
-        print(f"self.current: {self.current}")
 
         # todo 创建一种 EOF 类型的 TokenType, 作用是：
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
-        print(f"self.tokens: {self.tokens}")
         return self.tokens
 
     def scan_token(self) -> None:
@@ -38,7 +53,6 @@ class Scanner:
         :return:
         """
         c = self.advance()
-        print(f"current={self.current}, 字符: {c}")
         match c:
             case "(":
                 self.add_token(TokenType.LEFT_PAREN)
@@ -72,7 +86,6 @@ class Scanner:
                 # 判断下一个字符是否是 /,如果是 /,则是注释，否则是除号。
                 # 注释的形式：// [xxx]
                 if self.match("/"):
-                    print(f"注释匹配成功：current={self.current}, 字符: {self.source[self.current]}")
                     # 判断注释结束的逻辑：遇到换行符 \n
                     # while not self.is_at_end() and  self.source[self.current] != "\n":
                     #     print(f"current:{self.current}, 字符：{self.source[self.current]}")
@@ -92,7 +105,7 @@ class Scanner:
             case "\n":
                 self.line += 1
 
-            # 字符串(string)
+            # 字符串(STRING)
             # '"' 也可以写成 "\""
             case '"':
                 # 判断是否是右引号？
@@ -118,9 +131,37 @@ class Scanner:
 
                 self.add_token(TokenType.STRING, literal_string)
 
+            # 数字(NUMBER)
+            # case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9":
+            case _ if self.is_digit(c):
+                # 遍历，如果是数字，则继续往下
+                while self.is_digit(self.peek()):
+                    self.advance()
+                # 遍历的时候如果遇到点，则判断下一个字符是数字还是点，是数字表明是小数，继续，如果不是则结束
+                if self.peek() == "." and self.is_digit(self.source[self.current + 1]):
+                    self.advance()
+                    while self.is_digit(self.peek()):
+                        self.advance()
+
+                self.add_token(TokenType.NUMBER, float(self.source[self.start: self.current]))
             # 异常字符处理, 如: @#^
             case _:
-                Lox.error(self.line, f"Unexpected character {c}")
+                if (self.is_alpha(c)):
+                    self.identifier()
+                else:
+                    Lox.error(self.line, f"Unexpected character {c}")
+
+    def identifier(self) -> None:
+        while (self.is_alpha_numeric(self.peek())):
+            self.advance()
+        text = self.source[self.start: self.current]
+        token_type = Scanner.keywords.get(text)
+
+        # 如果text不在 keywords 里，那就是标识符
+        if token_type is None:
+            token_type = TokenType.IDENTIFIER
+
+        self.add_token(token_type)
 
     def match(self, expected: str) -> bool:
         """
@@ -141,6 +182,7 @@ class Scanner:
 
     def peek(self) -> str:
         """
+        获取当前字符
 
         :return:
         """
@@ -149,6 +191,38 @@ class Scanner:
             return "\0"
 
         return self.source[self.current]
+
+    def peek_next(self) -> str:
+        """
+        获取下一个字符
+
+        :return:
+        """
+        return self.source[self.current + 1]
+
+    def is_alpha(self, c: str) -> bool:
+        """
+        判断是否是字母(alphabet)
+        :param c: 字符
+        :return: 如果字符 c 是字母， 返回 True, 否则返回 False
+        """
+        return "a" <= c <= "z" or "A" <= c <= "Z" or c == "_"
+
+    def is_alpha_numeric(self, c: str) -> bool:
+        """
+        判断是否是字母(alphabet)或者数字
+        :param c: 字符
+        :return: 如果字符 c 是字母或数字， 返回 True, 否则返回 False
+        """
+        return self.is_alpha(c) or self.is_digit(c)
+
+    def is_digit(self, c: str) -> bool:
+        """
+        判断字符是否是 "0123456789" 中的一个。虽然 Python 内置库有 str.isdigit(),但是范围太广(如上标数字：²也被认为是数字)，所以自定义。
+        :param c: 字符
+        :return: True: 如果字符不是数字；False：字符不是数字。
+        """
+        return c in "0123456789"
 
     def is_at_end(self) -> bool:
         """
@@ -177,3 +251,13 @@ class Scanner:
         """
         text: str = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))
+
+    def is_number(self, string) -> bool:
+        """
+        判断是否是数字
+        :param string:
+        :return:
+        """
+        if string in "0123456789":
+            return True
+        return False

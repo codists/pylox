@@ -1,0 +1,3 @@
+// 关键字(keyword)/保留字(reserved word)：pylox/test/reserved_word/reserved_word_temp.lox
+// 输出：token 结构: TokenType.VAR, 'var', None, 2
+var
